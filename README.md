@@ -55,6 +55,37 @@ Tämän repon tehtävä on ainoastaan generoida sivusto — se ei sisällä
 deploy-logiikkaa eikä sisältöä. Ks. `lunttilaput`-repo esimerkkinä siitä,
 miten sisältörepo kutsuu tätä actionia ja vie lopputuloksen palvelimelle.
 
+## Saavutettavuus ja mobiilioptimointi
+
+Generoitu sivusto pyrkii WCAG 2.1 AAA -tasoon ilman JavaScriptiä tai uusia
+riippuvuuksia:
+
+- **Kontrasti (1.4.6):** väripaletti (vaalea + `prefers-color-scheme: dark`)
+  läpäisee 7:1 (teksti) / 4.5:1 (UI) kaikissa yhdistelmissä.
+- **Värinvalinta (1.4.8):** tumma/vaalea teema seuraa käyttöjärjestelmän
+  asetusta automaattisesti — ei vaadi JS:ää eikä kirjautumista.
+- **Ei pelkkää väriä tiedon välittäjänä (1.4.1):** aktiivinen navigaatiolinkki
+  merkitään `aria-current="page"`:lla ja ei-väripohjaisella lihavoinnilla/
+  reunaviivalla värin lisäksi.
+- **Kosketuskohteet (2.5.5):** navigaatiolinkeillä on vähintään 44×44px
+  kosketusalue — tämä on samalla tärkein mobiilioptimointikorjaus.
+- **Ohituslinkki, otsikkohierarkia, focus-visible:** "Siirry sisältöön"
+  -linkki, looginen H1→H2-rakenne jokaisella sivulla, selkeästi näkyvä
+  fokusrengas.
+- **Mobiili:** navigaatio pinoutuu sisällön yläpuolelle kapealla näytöllä
+  (`max-width: 700px`) ilman JS-toteutteista piilotusta/hampurilaisvalikkoa —
+  koko navigaatio pysyy aina näkyvissä ja normaalissa dokumenttivirtauksessa.
+- **Taulukot ja koodilohkot:** vierittyvät omassa kääreessään kapealla
+  näytöllä sen sijaan että pakottaisivat koko sivun vaakavieritykseen.
+
+**Tietoisesti rajattu ulkopuolelle:** kriteerit 3.1.3 (epätavalliset sanat),
+3.1.4 (lyhenteiden avaukset) ja 3.1.5 (lukutaso) eivät sovi järkevästi
+CLI-komentoihin ja tekniseen sanastoon perustuvaan sisältöön — niiden täysi
+toteutus (esim. jokaisen komennon selittäminen tai sisällön yksinkertaistaminen
+peruskoulutasolle) heikentäisi sisällön käyttökelpoisuutta kohdeyleisölle
+eikä oikeasti palvelisi saavutettavuutta. Muilta osin sivusto pyrkii
+AAA-tasoon.
+
 ## Versiointi
 
 Sisältörepo voi viitata joko:

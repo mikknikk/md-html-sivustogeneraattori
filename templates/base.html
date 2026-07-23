@@ -7,12 +7,13 @@
 <link rel="stylesheet" href="{{ css_href }}">
 </head>
 <body>
+<a class="skip-link" href="#content">Siirry sisältöön</a>
 <div class="layout">
-  <nav>
+  <nav aria-label="Päänavigaatio">
     <a class="home" href="{{ home_href }}">{{ site_title }}</a>
     {{ nav }}
   </nav>
-  <main>
+  <main id="content">
     {{ content }}
   </main>
 </div>

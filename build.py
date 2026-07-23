@@ -15,6 +15,7 @@ toimii riippumatta siitä, julkaistaanko se verkkotunnuksen juureen vai
 jonkin alikansion alle.
 """
 import argparse
+import re
 import shutil
 from pathlib import Path
 
@@ -55,11 +56,25 @@ def render_nav(structure, prefix, current_href):
         parts.append(f'<span class="nav-category">{category}</span>')
         parts.append("<ul>")
         for title, href in pages:
-            css_class = ' class="active"' if href == current_href else ""
-            parts.append(f'<li><a{css_class} href="{prefix}{href}">{title}</a></li>')
+            # aria-current + .active-luokka: nykyinen sivu ei saa erottua
+            # navigaatiossa pelkästä väristä (WCAG 1.4.1).
+            attrs = ' class="active" aria-current="page"' if href == current_href else ""
+            parts.append(f'<li><a{attrs} href="{prefix}{href}">{title}</a></li>')
         parts.append("</ul></li>")
     parts.append("</ul>")
     return "\n".join(parts)
+
+
+def wrap_tables(html):
+    """Kietoo taulukot vierittyvään kääreeseen kapeita näyttöjä varten.
+
+    Säilyttää natiivin <table>-semantiikan (toisin kuin CSS:n
+    table{display:block}-temppu, joka voi rikkoa ruudunlukijoiden
+    rivi-/sarakekäsittelyn joissain selaimissa).
+    """
+    html = re.sub(r"<table>", '<div class="table-scroll">\n<table>', html)
+    html = re.sub(r"</table>", "</table>\n</div>", html)
+    return html
 
 
 def render_page(base_template, site_title, title, href, nav_html, content_html):
@@ -105,7 +120,7 @@ def build(content_dir, output_dir, templates_dir, site_title):
 
     # Toinen ajo: renderöi jokainen sivu, kun koko navigaatio on tiedossa.
     for md_path, href, title, body in pages:
-        html_body = markdown.markdown(body, extensions=["tables", "fenced_code"])
+        html_body = wrap_tables(markdown.markdown(body, extensions=["tables", "fenced_code"]))
         prefix = path_prefix(href)
         nav_html = render_nav(structure, prefix, href)
         page_content = f"<h1>{title}</h1>\n{html_body}"
