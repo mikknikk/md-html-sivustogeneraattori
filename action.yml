@@ -8,6 +8,10 @@ inputs:
     description: 'Polku, johon generoitu sivusto kirjoitetaan'
     required: false
     default: '_site'
+  site-title:
+    description: 'Sivuston nimi, joka näkyy navigaatiossa ja etusivun otsikkona'
+    required: false
+    default: 'Sisältö'
 runs:
   using: 'composite'
   steps:
@@ -21,4 +25,5 @@ runs:
         python3 "${{ github.action_path }}/build.py" \
           --content "${{ inputs.content-dir }}" \
           --output "${{ inputs.output-dir }}" \
-          --templates "${{ github.action_path }}/templates"
+          --templates "${{ github.action_path }}/templates" \
+          --site-title "${{ inputs.site-title }}"

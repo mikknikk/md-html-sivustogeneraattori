@@ -9,6 +9,10 @@ Jokainen .md-tiedosto voi alkaa valinnaisella front matter -lohkolla:
     ---
 
     Loppuosa on tavallista Markdownia.
+
+Kaikki linkit generoidaan sivukohtaisesti suhteellisina, joten sivusto
+toimii riippumatta siitä, julkaistaanko se verkkotunnuksen juureen vai
+jonkin alikansion alle.
 """
 import argparse
 import shutil
@@ -39,7 +43,12 @@ def humanize(name):
     return name.replace("-", " ").replace("_", " ").strip().capitalize()
 
 
-def render_nav(structure, current_href):
+def path_prefix(href):
+    """'../'-etuliite, jolla pääsee href:n sijainnista takaisin sivuston juureen."""
+    return "../" * href.count("/")
+
+
+def render_nav(structure, prefix, current_href):
     parts = ['<ul class="nav">']
     for category, pages in structure.items():
         parts.append("<li>")
@@ -47,13 +56,25 @@ def render_nav(structure, current_href):
         parts.append("<ul>")
         for title, href in pages:
             css_class = ' class="active"' if href == current_href else ""
-            parts.append(f'<li><a{css_class} href="/{href}">{title}</a></li>')
+            parts.append(f'<li><a{css_class} href="{prefix}{href}">{title}</a></li>')
         parts.append("</ul></li>")
     parts.append("</ul>")
     return "\n".join(parts)
 
 
-def build(content_dir, output_dir, templates_dir):
+def render_page(base_template, site_title, title, href, nav_html, content_html):
+    prefix = path_prefix(href)
+    return (
+        base_template.replace("{{ site_title }}", site_title)
+        .replace("{{ title }}", title)
+        .replace("{{ css_href }}", f"{prefix}style.css")
+        .replace("{{ home_href }}", f"{prefix}index.html")
+        .replace("{{ nav }}", nav_html)
+        .replace("{{ content }}", content_html)
+    )
+
+
+def build(content_dir, output_dir, templates_dir, site_title):
     content_dir = Path(content_dir)
     output_dir = Path(output_dir)
     templates_dir = Path(templates_dir)
@@ -85,27 +106,23 @@ def build(content_dir, output_dir, templates_dir):
     # Toinen ajo: renderöi jokainen sivu, kun koko navigaatio on tiedossa.
     for md_path, href, title, body in pages:
         html_body = markdown.markdown(body, extensions=["tables", "fenced_code"])
-        nav_html = render_nav(structure, href)
-        page_html = (
-            base_template.replace("{{ title }}", title)
-            .replace("{{ nav }}", nav_html)
-            .replace("{{ content }}", html_body)
-        )
+        prefix = path_prefix(href)
+        nav_html = render_nav(structure, prefix, href)
+        page_html = render_page(base_template, site_title, title, href, nav_html, html_body)
         out_path = output_dir / Path(href)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(page_html, encoding="utf-8")
 
     # Etusivu listaa kaikki sivut kategorioittain.
-    index_body = ['<h1>Ohjeet ja lunttilaput</h1>']
+    index_body = [f"<h1>{site_title}</h1>"]
     for category, cat_pages in structure.items():
         index_body.append(f"<h2>{category}</h2><ul>")
         for title, href in cat_pages:
-            index_body.append(f'<li><a href="/{href}">{title}</a></li>')
+            index_body.append(f'<li><a href="{href}">{title}</a></li>')
         index_body.append("</ul>")
-    index_html = (
-        base_template.replace("{{ title }}", "Etusivu")
-        .replace("{{ nav }}", render_nav(structure, ""))
-        .replace("{{ content }}", "\n".join(index_body))
+    index_html = render_page(
+        base_template, site_title, site_title, "index.html",
+        render_nav(structure, "", ""), "\n".join(index_body),
     )
     (output_dir / "index.html").write_text(index_html, encoding="utf-8")
 
@@ -117,5 +134,6 @@ if __name__ == "__main__":
     parser.add_argument("--content", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--templates", required=True)
+    parser.add_argument("--site-title", default="Sisältö")
     args = parser.parse_args()
-    build(args.content, args.output, args.templates)
+    build(args.content, args.output, args.templates, args.site_title)
