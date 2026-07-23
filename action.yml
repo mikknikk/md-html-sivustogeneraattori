@@ -1,0 +1,24 @@
+name: 'Luntti-generaattori'
+description: 'Generoi staattisen HTML-sivuston Markdown-sisällöstä'
+inputs:
+  content-dir:
+    description: 'Polku sisältökansioon (Markdown-tiedostot)'
+    required: true
+  output-dir:
+    description: 'Polku, johon generoitu sivusto kirjoitetaan'
+    required: false
+    default: '_site'
+runs:
+  using: 'composite'
+  steps:
+    - name: Asenna Python-riippuvuudet
+      shell: bash
+      run: pip install --quiet markdown
+
+    - name: Generoi sivusto
+      shell: bash
+      run: |
+        python3 "${{ github.action_path }}/build.py" \
+          --content "${{ inputs.content-dir }}" \
+          --output "${{ inputs.output-dir }}" \
+          --templates "${{ github.action_path }}/templates"
