@@ -108,7 +108,8 @@ def build(content_dir, output_dir, templates_dir, site_title):
         html_body = markdown.markdown(body, extensions=["tables", "fenced_code"])
         prefix = path_prefix(href)
         nav_html = render_nav(structure, prefix, href)
-        page_html = render_page(base_template, site_title, title, href, nav_html, html_body)
+        page_content = f"<h1>{title}</h1>\n{html_body}"
+        page_html = render_page(base_template, site_title, title, href, nav_html, page_content)
         out_path = output_dir / Path(href)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(page_html, encoding="utf-8")
