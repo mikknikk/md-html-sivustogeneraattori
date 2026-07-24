@@ -58,6 +58,32 @@ Tästä syntyy navigaatioon rakenne "Tietokoneet" > ("Git" ja alikategoria
 `sisalto/`-kansioon suoraan laitetut `.md`-tiedostot (ilman mitään
 alikansiota) ryhmitellään "Yleiset"-kategorian alle.
 
+## Sisällön järjestäminen
+
+Kansiot ja tiedostot listataan navigaatiossa sekä etusivulla aakkos-/
+polkujärjestyksessä. Jos oletusjärjestys ei kelpaa, nimeä kansio tai
+tiedosto numeroetuliitteellä (`NN-nimi`), esim.:
+
+```
+sisalto/
+  01-tietokoneet/
+    01-git.md
+    02-editorit/
+      01-vscode.md
+      02-vim.md
+  02-kielet/
+    espanja.md
+```
+
+Generaattori piilottaa `NN-`-etuliitteen näkyvästä nimestä automaattisesti
+— "01-tietokoneet" näkyy navigaatiossa pelkkänä "Tietokoneet". Etuliite
+vaikuttaa vain lajittelujärjestykseen. Käytä kaksinumeroista (tai
+useampinumeroista) etuliitettä heti alusta, jos kategorioita/tiedostoja voi
+myöhemmin tulla kymmenen tai enemmän — muuten "10-..." lajittuu
+aakkosjärjestyksessä ennen "2-...":a merkkijonovertailun vuoksi. Kansiot tai
+tiedostot ilman numeroetuliitettä toimivat edelleen normaalisti; numerointia
+tarvitsee käyttää vain siellä, missä oletusjärjestys ei kelpaa.
+
 Jokainen `.md`-tiedosto voi alkaa valinnaisella front matterilla:
 
 ```

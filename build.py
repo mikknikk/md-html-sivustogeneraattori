@@ -42,7 +42,13 @@ def parse_frontmatter(text):
     return {}, text
 
 
+ORDER_PREFIX = re.compile(r"^\d+[-_]")
+
+
 def humanize(name):
+    # Numeroetuliite (esim. "01-editorit" -> "editorit") ohjaa vain
+    # aakkosjärjestykseen perustuvaa lajittelua, ei saa näkyä nimessä.
+    name = ORDER_PREFIX.sub("", name)
     return name.replace("-", " ").replace("_", " ").strip().capitalize()
 
 
