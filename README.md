@@ -58,6 +58,31 @@ Tästä syntyy navigaatioon rakenne "Tietokoneet" > ("Git" ja alikategoria
 `sisalto/`-kansioon suoraan laitetut `.md`-tiedostot (ilman mitään
 alikansiota) ryhmitellään "Yleiset"-kategorian alle.
 
+## Kansioiden index-sivut ja `index.md`
+
+Jokainen kansio — myös sisältökansion juuri eli koko sivuston etusivu —
+saa automaattisesti oman `index.html`:n, joka listaa kyseisen kansion
+suorat sivut ja alikategoriat (linkkeinä niiden omiin index-sivuihin;
+listaus ei mene rekursiivisesti syvemmälle, samaan tapaan kuin
+tiedostoselaimessa selataan kansio kerrallaan). Navigaatiossa
+**kategorian nimi on linkki tähän kansion omaan index-sivuun.**
+
+Jos kansiossa on tiedosto nimeltä `index.md`, sen front matterin
+`title`-arvo (jos annettu) ja sisältö näytetään ennen tuota automaattista
+listausta:
+
+```
+sisalto/
+  tietokoneet/
+    index.md
+    git.md
+```
+
+`index.md` toimii tavallisten sääntöjen mukaan (front matter valinnainen,
+loppuosa Markdownia) mutta **ei näy omana rivinään navigaatiossa** —
+kategorianimen linkki johtaa jo tähän samaan sivuun, joten erillistä
+nav-riviä ei tarvita.
+
 ## Sisällön järjestäminen
 
 Kansiot ja tiedostot listataan navigaatiossa sekä etusivulla aakkos-/

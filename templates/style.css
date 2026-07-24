@@ -89,12 +89,32 @@ nav ul ul {
   margin: 0;
 }
 
+/* Kategorianimi on linkki kansion omalle index-sivulle, joten se saa
+   kosketuskohteen (2.5.5) samoin kuin tavalliset nav-linkit, mutta
+   säilyttää oman pienemmän/versaali-ilmeensä. */
 nav .nav-category {
-  display: block;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 0.8rem;
   text-transform: uppercase;
   color: var(--muted);
+  text-decoration: none;
   margin-top: 16px;
+}
+
+nav .nav-category:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Sama ei-väripohjainen korostustapa kuin tavallisilla sivulinkeillä
+   (1.4.1) — käytössä kun ollaan juuri kyseisen kansion index-sivulla. */
+nav .nav-category.active {
+  color: var(--accent);
+  font-weight: 700;
+  border-left: 3px solid var(--accent);
+  padding-left: 5px;
 }
 
 /* min-height 44px täyttää AAA-kosketuskohteen (2.5.5) ja on samalla
