@@ -82,6 +82,13 @@ nav ul {
   margin: 0 0 8px 0;
 }
 
+/* Sisäkkäiset alikategoriat sisennetään, jotta kansiohierarkia näkyy myös
+   visuaalisesti navigaatiossa. */
+nav ul ul {
+  padding-left: 12px;
+  margin: 0;
+}
+
 nav .nav-category {
   display: block;
   font-size: 0.8rem;

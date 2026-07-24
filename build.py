@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Generoi staattisen HTML-sivuston Markdown-tiedostoista.
 
-Sisältökansion jokainen alikansio muodostaa yhden kategorian navigaatioon.
-Jokainen .md-tiedosto voi alkaa valinnaisella front matter -lohkolla:
+Sisältökansion jokainen alikansio muodostaa kategorian navigaatioon, ja
+alikansiot voi sisäkkäistää mielivaltaisen syvälle — jokainen taso näkyy
+omana, sisennettynä alikategorianaan. Jokainen .md-tiedosto voi alkaa
+valinnaisella front matter -lohkolla:
 
     ---
     title: Sivun otsikko
@@ -49,19 +51,49 @@ def path_prefix(href):
     return "../" * href.count("/")
 
 
-def render_nav(structure, prefix, current_href):
+def new_node():
+    return {"pages": [], "children": {}}
+
+
+def insert_page(tree, folder_parts, title, href):
+    """Sijoittaa sivun puuhun sen kansiopolun (kategoria > alikategoria > ...) mukaan."""
+    node = tree
+    for part in folder_parts:
+        node = node["children"].setdefault(part, new_node())
+    node["pages"].append((title, href))
+
+
+def render_category_nav(display_name, node, prefix, current_href):
+    parts = ["<li>", f'<span class="nav-category">{display_name}</span>', "<ul>"]
+    for title, href in node["pages"]:
+        # aria-current + .active-luokka: nykyinen sivu ei saa erottua
+        # navigaatiossa pelkästä väristä (WCAG 1.4.1).
+        attrs = ' class="active" aria-current="page"' if href == current_href else ""
+        parts.append(f'<li><a{attrs} href="{prefix}{href}">{title}</a></li>')
+    for name, child in node["children"].items():
+        parts.append(render_category_nav(humanize(name), child, prefix, current_href))
+    parts.append("</ul></li>")
+    return "\n".join(parts)
+
+
+def render_nav(tree, prefix, current_href):
     parts = ['<ul class="nav">']
-    for category, pages in structure.items():
-        parts.append("<li>")
-        parts.append(f'<span class="nav-category">{category}</span>')
-        parts.append("<ul>")
-        for title, href in pages:
-            # aria-current + .active-luokka: nykyinen sivu ei saa erottua
-            # navigaatiossa pelkästä väristä (WCAG 1.4.1).
-            attrs = ' class="active" aria-current="page"' if href == current_href else ""
-            parts.append(f'<li><a{attrs} href="{prefix}{href}">{title}</a></li>')
-        parts.append("</ul></li>")
+    if tree["pages"]:
+        parts.append(render_category_nav("Yleiset", {"pages": tree["pages"], "children": {}}, prefix, current_href))
+    for name, child in tree["children"].items():
+        parts.append(render_category_nav(humanize(name), child, prefix, current_href))
     parts.append("</ul>")
+    return "\n".join(parts)
+
+
+def render_index_section(display_name, node, level):
+    level = min(level, 6)
+    parts = [f"<h{level}>{display_name}</h{level}>", "<ul>"]
+    for title, href in node["pages"]:
+        parts.append(f'<li><a href="{href}">{title}</a></li>')
+    parts.append("</ul>")
+    for name, child in node["children"].items():
+        parts.append(render_index_section(humanize(name), child, level + 1))
     return "\n".join(parts)
 
 
@@ -105,40 +137,41 @@ def build(content_dir, output_dir, templates_dir, site_title):
     if not md_files:
         raise SystemExit(f"Sisältöä ei löytynyt kansiosta: {content_dir}")
 
-    # Ensimmäinen ajo: lue metatiedot ja rakenna navigaatio kategorioittain.
+    # Ensimmäinen ajo: lue metatiedot ja rakenna navigaatiopuu kansiorakenteen
+    # mukaan (kansio = kategoria, alikansio = alikategoria, jne. mielivaltaisen
+    # syvälle).
     pages = []
-    structure = {}
+    tree = new_node()
     for md_path in md_files:
         rel = md_path.relative_to(content_dir)
-        category = humanize(rel.parts[0]) if len(rel.parts) > 1 else "Yleiset"
+        folder_parts = rel.parts[:-1]
         text = md_path.read_text(encoding="utf-8")
         meta, body = parse_frontmatter(text)
         title = meta.get("title", humanize(md_path.stem))
         href = str(rel.with_suffix(".html")).replace("\\", "/")
         pages.append((md_path, href, title, body))
-        structure.setdefault(category, []).append((title, href))
+        insert_page(tree, folder_parts, title, href)
 
     # Toinen ajo: renderöi jokainen sivu, kun koko navigaatio on tiedossa.
     for md_path, href, title, body in pages:
         html_body = wrap_tables(markdown.markdown(body, extensions=["tables", "fenced_code"]))
         prefix = path_prefix(href)
-        nav_html = render_nav(structure, prefix, href)
+        nav_html = render_nav(tree, prefix, href)
         page_content = f"<h1>{title}</h1>\n{html_body}"
         page_html = render_page(base_template, site_title, title, href, nav_html, page_content)
         out_path = output_dir / Path(href)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(page_html, encoding="utf-8")
 
-    # Etusivu listaa kaikki sivut kategorioittain.
+    # Etusivu listaa kaikki sivut kategorioittain (ja alikategorioittain).
     index_body = [f"<h1>{site_title}</h1>"]
-    for category, cat_pages in structure.items():
-        index_body.append(f"<h2>{category}</h2><ul>")
-        for title, href in cat_pages:
-            index_body.append(f'<li><a href="{href}">{title}</a></li>')
-        index_body.append("</ul>")
+    if tree["pages"]:
+        index_body.append(render_index_section("Yleiset", {"pages": tree["pages"], "children": {}}, 2))
+    for name, child in tree["children"].items():
+        index_body.append(render_index_section(humanize(name), child, 2))
     index_html = render_page(
         base_template, site_title, site_title, "index.html",
-        render_nav(structure, "", ""), "\n".join(index_body),
+        render_nav(tree, "", ""), "\n".join(index_body),
     )
     (output_dir / "index.html").write_text(index_html, encoding="utf-8")
 

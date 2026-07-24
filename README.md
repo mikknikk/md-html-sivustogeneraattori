@@ -38,8 +38,27 @@ sisalto/
     lunttilappu.md
 ```
 
-Alikansion nimi näkyy navigaatiossa kategoriana. Jokainen `.md`-tiedosto voi
-alkaa valinnaisella front matterilla:
+Alikansion nimi näkyy navigaatiossa kategoriana. Kansioita voi sisäkkäistää
+mielivaltaisen syvälle — jokainen taso muodostaa oman, sisennetyn
+alikategoriansa sekä navigaatiossa että etusivun listauksessa:
+
+```
+sisalto/
+  tietokoneet/
+    git.md
+    editorit/
+      vim.md
+      vscode.md
+  kielet/
+    espanja.md
+```
+
+Tästä syntyy navigaatioon rakenne "Tietokoneet" > ("Git" ja alikategoria
+"Editorit" > "Vim", "VS Code") sekä erikseen "Kielet" > "Espanja". Juuri
+`sisalto/`-kansioon suoraan laitetut `.md`-tiedostot (ilman mitään
+alikansiota) ryhmitellään "Yleiset"-kategorian alle.
+
+Jokainen `.md`-tiedosto voi alkaa valinnaisella front matterilla:
 
 ```
 ---
