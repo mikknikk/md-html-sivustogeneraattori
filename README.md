@@ -67,6 +67,15 @@ listaus ei mene rekursiivisesti syvemmälle, samaan tapaan kuin
 tiedostoselaimessa selataan kansio kerrallaan). Navigaatiossa
 **kategorian nimi on linkki tähän kansion omaan index-sivuun.**
 
+Navigaation kategoriat ovat lisäksi avattavia/suljettavia natiivilla
+HTML:n `<details>`/`<summary>`-elementillä — ei JavaScriptiä, toimii
+näppäimistöllä (Enter/Space) ja ruudunlukijalla automaattisesti.
+Oletuksena kategoria on kiinni, paitsi jos se sisältää nykyisen sivun
+(suoraan tai jonkin alikategorian kautta) — tällöin se ja kaikki sen
+sisältävät emokategoriat avautuvat automaattisesti, jotta nykyinen
+sijainti ei jää piiloon. Auki/kiinni-tila näkyy kolmiomerkin suunnasta
+(▸/▾), ei pelkästä väristä.
+
 Jos kansiossa on tiedosto nimeltä `index.md`, sen front matterin
 `title`-arvo (jos annettu) ja sisältö näytetään ennen tuota automaattista
 listausta:

@@ -85,14 +85,36 @@ def category_title(name, node):
     return (node["index_meta"] or {}).get("title", humanize(name))
 
 
+def category_contains_active(node, folder_parts, current_href):
+    """Onko current_href tämä kategoria itse, jokin sen suora sivu, tai
+    jotain jonkin alikategorian sisällä? Määrää avataanko <details>
+    oletuksena, jotta nykyinen sijainti ei jää piiloon suljetun kategorian
+    taakse."""
+    if folder_href(folder_parts) == current_href:
+        return True
+    if any(href == current_href for _, href in node["pages"]):
+        return True
+    return any(
+        category_contains_active(child, folder_parts + (name,), current_href)
+        for name, child in node["children"].items()
+    )
+
+
 def render_category_nav(display_name, folder_parts, node, prefix, current_href):
     category_href = folder_href(folder_parts)
     is_active = category_href == current_href
     css_class = "nav-category active" if is_active else "nav-category"
     aria = ' aria-current="page"' if is_active else ""
+    # <details> ilman "open"-attribuuttia on kiinni oletuksena — mutta
+    # kategoria, joka sisältää nykyisen sivun, avataan automaattisesti,
+    # jotta käyttäjä näkee aina missä on eikä sijainti katoa suljetun
+    # valikon taakse. Ei JavaScriptiä: natiivi HTML hoitaa avaamisen ja
+    # sulkemisen sekä näppäimistöllä että ruudunlukijalla.
+    open_attr = " open" if category_contains_active(node, folder_parts, current_href) else ""
     parts = [
         "<li>",
-        f'<a class="{css_class}"{aria} href="{prefix}{category_href}">{display_name}</a>',
+        f"<details{open_attr}>",
+        f'<summary><a class="{css_class}"{aria} href="{prefix}{category_href}">{display_name}</a></summary>',
         "<ul>",
     ]
     for title, href in node["pages"]:
@@ -102,7 +124,7 @@ def render_category_nav(display_name, folder_parts, node, prefix, current_href):
         parts.append(f'<li><a{attrs} href="{prefix}{href}">{title}</a></li>')
     for name, child in node["children"].items():
         parts.append(render_category_nav(category_title(name, child), folder_parts + (name,), child, prefix, current_href))
-    parts.append("</ul></li>")
+    parts.append("</ul></details></li>")
     return "\n".join(parts)
 
 

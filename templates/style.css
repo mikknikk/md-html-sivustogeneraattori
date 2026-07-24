@@ -89,18 +89,50 @@ nav ul ul {
   margin: 0;
 }
 
+/* Kategoriat ovat <details>/<summary>-elementtejä: avautuvat/sulkeutuvat
+   ilman JavaScriptia, näppäimistöllä ja ruudunlukijalla toimien natiivisti.
+   Kiinni oletuksena (ei "open"-attribuuttia), paitsi kun kategoria
+   sisältää nykyisen sivun (build.py:n category_contains_active). */
+nav details {
+  margin-top: 8px;
+}
+
+nav summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Piilota selainten oletusarvoinen kolmiomerkki, jotta oma merkki näkyy
+   yhtenäisesti eri selaimissa ja teemoissa. */
+nav summary::-webkit-details-marker {
+  display: none;
+}
+
+nav summary::before {
+  content: "▸";
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1em;
+  margin-right: 4px;
+  color: var(--muted);
+}
+
+/* Auki-tila ilmaistaan merkin muodolla, ei pelkällä värillä (1.4.1). */
+nav details[open] > summary::before {
+  content: "▾";
+}
+
 /* Kategorianimi on linkki kansion omalle index-sivulle, joten se saa
    kosketuskohteen (2.5.5) samoin kuin tavalliset nav-linkit, mutta
    säilyttää oman pienemmän/versaali-ilmeensä. */
 nav .nav-category {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
   font-size: 0.8rem;
   text-transform: uppercase;
   color: var(--muted);
   text-decoration: none;
-  margin-top: 16px;
 }
 
 nav .nav-category:hover {
@@ -113,8 +145,6 @@ nav .nav-category:hover {
 nav .nav-category.active {
   color: var(--accent);
   font-weight: 700;
-  border-left: 3px solid var(--accent);
-  padding-left: 5px;
 }
 
 /* min-height 44px täyttää AAA-kosketuskohteen (2.5.5) ja on samalla
