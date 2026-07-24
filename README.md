@@ -83,6 +83,12 @@ loppuosa Markdownia) mutta **ei näy omana rivinään navigaatiossa** —
 kategorianimen linkki johtaa jo tähän samaan sivuun, joten erillistä
 nav-riviä ei tarvita.
 
+`index.md`:n `title` vaikuttaa myös sivupalkin kategorianimeen, ei
+pelkästään kansion omaan sivuun. Tämä on tarpeen, kun kansionimestä
+johdettu oletusnimi ei kelpaa sellaisenaan — esim. `humanize()` muuttaisi
+kansion `vscode` näyttönimeksi "Vscode", ei "VS Code". Aseta tällöin
+`sisalto/tietokoneet/vscode/index.md`:hen `title: VS Code`.
+
 ## Sisällön järjestäminen
 
 Kansiot ja tiedostot listataan navigaatiossa sekä etusivulla aakkos-/

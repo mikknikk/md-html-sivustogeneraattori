@@ -78,6 +78,13 @@ def folder_href(folder_parts):
     return "/".join(folder_parts + ("index.html",)) if folder_parts else "index.html"
 
 
+def category_title(name, node):
+    """Kategorian näyttönimi: kansion index.md:n title voittaa, muuten
+    kansionimestä johdettu oletus. Tarvitaan esim. "vscode" -> "VS Code",
+    joita humanize()-funktion yksinkertainen sääntö ei osaa tuottaa."""
+    return (node["index_meta"] or {}).get("title", humanize(name))
+
+
 def render_category_nav(display_name, folder_parts, node, prefix, current_href):
     category_href = folder_href(folder_parts)
     is_active = category_href == current_href
@@ -94,7 +101,7 @@ def render_category_nav(display_name, folder_parts, node, prefix, current_href):
         attrs = ' class="active" aria-current="page"' if href == current_href else ""
         parts.append(f'<li><a{attrs} href="{prefix}{href}">{title}</a></li>')
     for name, child in node["children"].items():
-        parts.append(render_category_nav(humanize(name), folder_parts + (name,), child, prefix, current_href))
+        parts.append(render_category_nav(category_title(name, child), folder_parts + (name,), child, prefix, current_href))
     parts.append("</ul></li>")
     return "\n".join(parts)
 
@@ -107,7 +114,7 @@ def render_nav(tree, prefix, current_href):
         # etusivulle, jossa ne muutenkin listataan.
         parts.append(render_category_nav("Yleiset", (), {"pages": tree["pages"], "children": {}}, prefix, current_href))
     for name, child in tree["children"].items():
-        parts.append(render_category_nav(humanize(name), (name,), child, prefix, current_href))
+        parts.append(render_category_nav(category_title(name, child), (name,), child, prefix, current_href))
     parts.append("</ul>")
     return "\n".join(parts)
 
@@ -125,7 +132,7 @@ def render_folder_body(node, folder_parts, prefix):
         parts.append("<ul>")
         for name, child in node["children"].items():
             child_href = folder_href(folder_parts + (name,))
-            parts.append(f'<li><a href="{prefix}{child_href}">{humanize(name)}</a></li>')
+            parts.append(f'<li><a href="{prefix}{child_href}">{category_title(name, child)}</a></li>')
         parts.append("</ul>")
     return "\n".join(parts)
 
@@ -215,8 +222,7 @@ def build(content_dir, output_dir, templates_dir, site_title):
         folder_count += 1
         href = folder_href(folder_parts)
         prefix = path_prefix(href)
-        display_name = site_title if not folder_parts else humanize(folder_parts[-1])
-        title = (node["index_meta"] or {}).get("title", display_name)
+        title = site_title if not folder_parts else category_title(folder_parts[-1], node)
 
         body_parts = []
         if node["index_body"]:
